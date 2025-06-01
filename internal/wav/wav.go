@@ -5,6 +5,7 @@ import (
 	"io"
 )
 
+// Header represents the header of a WAV file.
 type Header struct {
 	ChunkID       [4]byte // "RIFF"
 	ChunkSize     uint32  // 36 + Subchunk2Size
@@ -21,11 +22,13 @@ type Header struct {
 	Subchunk2Size uint32  // NumSamples * NumChannels * BitsPerSample/8
 }
 
+// Options specifies the WAV encoding parameters.
 type Options struct {
 	NumChannels int
 	SampleRate  int
 }
 
+// Write writes the given PCM data as a WAV file to the provided writer using the specified options.
 func Write(w io.Writer, pcm []byte, opt Options) error {
 	h := Header{
 		ChunkID:       [4]byte{'R', 'I', 'F', 'F'},

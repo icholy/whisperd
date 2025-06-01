@@ -21,6 +21,7 @@ const (
 	UI_SET_KEYBIT  = 0x40045565
 )
 
+// InputID represents the identification information for a uinput device.
 type InputID struct {
 	Bustype uint16
 	Vendor  uint16
@@ -28,12 +29,14 @@ type InputID struct {
 	Version uint16
 }
 
+// Setup contains the configuration for a uinput device.
 type Setup struct {
 	ID           InputID
 	Name         [80]byte
 	FFEffectsMax uint32
 }
 
+// Create creates a new uinput device with the given name and returns the file descriptor.
 func Create(name string) (*os.File, error) {
 	if len(name) >= 80 {
 		return nil, fmt.Errorf("name is too long: %q", name)
@@ -73,11 +76,13 @@ func Create(name string) (*os.File, error) {
 	return f, nil
 }
 
+// Destroy destroys the given uinput device.
 func Destroy(f *os.File) error {
 	fd := int(f.Fd())
 	return unix.IoctlSetInt(fd, UI_DEV_DESTROY, 0)
 }
 
+// Emit writes a batch of input events to the given uinput device file.
 func Emit(f *os.File, batch []inputcodes.Event) error {
 	var buf bytes.Buffer
 	for _, e := range batch {
@@ -92,6 +97,7 @@ func Emit(f *os.File, batch []inputcodes.Event) error {
 	return nil
 }
 
+// EmitText emits a string as keyboard events to the given uinput device file.
 func EmitText(f *os.File, text string) error {
 	for i, r := range text {
 		if i > 0 {

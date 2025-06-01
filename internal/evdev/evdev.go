@@ -8,6 +8,7 @@ import (
 	"github.com/icholy/whisperd/internal/inputcodes"
 )
 
+// WaitForKey blocks until the specified key event (code and value) is received from the device.
 func WaitForKey(device *os.File, code uint16, value int32) error {
 	for {
 		var e inputcodes.Event
@@ -20,6 +21,7 @@ func WaitForKey(device *os.File, code uint16, value int32) error {
 	}
 }
 
+// KeyDownContext returns a context that is canceled when the specified key is released after being pressed.
 func KeyDownContext(device *os.File, code uint16) (context.Context, error) {
 	if err := WaitForKey(device, code, 1); err != nil {
 		return nil, err

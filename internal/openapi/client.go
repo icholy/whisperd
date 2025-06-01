@@ -9,10 +9,12 @@ import (
 	"net/http"
 )
 
+// Client is an OpenAI API client for audio transcription.
 type Client struct {
 	APIKey string
 }
 
+// Transcribe sends a WAV audio file to the OpenAI Whisper API and returns the transcribed text.
 func (c *Client) Transcribe(ctx context.Context, wav io.Reader, filename string) (string, error) {
 	var buf bytes.Buffer
 	w := multipart.NewWriter(&buf)

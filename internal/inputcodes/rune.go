@@ -1,5 +1,6 @@
 package inputcodes
 
+// Keys is a list of key codes for supported keyboard keys.
 var Keys = []uint16{
 	KEY_0,
 	KEY_1,
@@ -54,6 +55,7 @@ var Keys = []uint16{
 	KEY_Z,
 }
 
+// RuneEvents maps runes to the corresponding key event sequences for input simulation.
 var RuneEvents = map[rune][]Event{
 	// Lowercase letters
 	'a': {{Type: EV_KEY, Code: KEY_A}},
