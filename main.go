@@ -3,12 +3,13 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"log"
 	"os"
 
 	"github.com/icholy/whisperd/internal/evdev"
 	"github.com/icholy/whisperd/internal/inputcodes"
-	"github.com/icholy/whisperd/internal/openapi"
+	"github.com/icholy/whisperd/internal/openai"
 	"github.com/icholy/whisperd/internal/pipewire"
 	"github.com/icholy/whisperd/internal/uinput"
 )
@@ -49,6 +50,9 @@ func main() {
 			log.Fatal(err)
 		}
 		<-recctx.Done()
+		if err := context.Cause(recctx); err != nil && !errors.Is(err, context.Canceled) {
+			log.Fatal("recctx cancelled with non-cancel error: ", err)
+		}
 		log.Println("stopping recording")
 		if err := rec.Stop(); err != nil {
 			log.Fatal(err)
