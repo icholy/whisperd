@@ -18,7 +18,7 @@ import (
 func main() {
 	var inputPath, openaiKey string
 	var keyCode int
-	flag.StringVar(&inputPath, "input", "", "device path to use. Ex: /dev/input/inputX")
+	flag.StringVar(&inputPath, "input", "", "device path to use. Ex: /dev/input/eventX")
 	flag.IntVar(&keyCode, "key", int(inputcodes.KEY_MAIL), "Key code to use")
 	flag.StringVar(&openaiKey, "openai.key", "", "OpenAI API Key")
 	flag.Parse()
