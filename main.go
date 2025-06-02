@@ -28,6 +28,9 @@ func main() {
 	if openaiKey == "" {
 		log.Fatal("no api key found")
 	}
+	if inputPath == "" {
+		log.Fatal("missing input device path")
+	}
 	// open input keyboard
 	input, err := os.Open(inputPath)
 	if err != nil {
