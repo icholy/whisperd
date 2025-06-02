@@ -12,13 +12,37 @@ A Linux daemon for voice-to-text typing using OpenAI Whisper.
 - PipeWire (`pw-cat`)
 - Go 1.21+
 
+## Configuration
+
+### Command Line Flags
+
+- `-input` - Device path to use (required). Example: `/dev/input/event3`
+- `-key` - Key code to use as hotkey (default: 155, which is KEY_MAIL)
+- `-openai.key` - OpenAI API Key (can also be set via `OPENAI_API_KEY` environment variable)
+### Key Codes
+
+For available key codes to use with the `-key` flag, see [internal/inputcodes/codes.go](internal/inputcodes/codes.go).
+
 ## Usage
-1. Build and run the daemon:
+1. Set your OpenAI API key:
+   ```sh
+   export OPENAI_API_KEY="your-api-key-here"
+   ```
+
+2. Find your input device:
+   ```sh
+   ls /dev/input/event*
+   # or use evtest to identify the correct device
+   sudo evtest
+   ```
+
+3. Build and run the daemon:
    ```sh
    go build -o whisperd .
-   sudo ./whisperd
+   sudo ./whisperd -input /dev/input/event3
    ```
-2. Hold the configured hotkey to dictate text.
+
+4. Hold the configured hotkey to dictate text.
 
 ## Permissions
 - Add your user to the `input` group:
