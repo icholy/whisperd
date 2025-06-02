@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"flag"
 	"log"
 	"os"
 
@@ -15,8 +16,20 @@ import (
 )
 
 func main() {
+	var inputPath, openaiKey string
+	var keyCode int
+	flag.StringVar(&inputPath, "input", "", "device path to use. Ex: /dev/input/inputX")
+	flag.IntVar(&keyCode, "key", int(inputcodes.KEY_MAIL), "Key code to use")
+	flag.StringVar(&openaiKey, "openai.key", "", "OpenAI API Key")
+	flag.Parse()
+	if openaiKey == "" {
+		openaiKey = os.Getenv("OPENAI_API_KEY")
+	}
+	if openaiKey == "" {
+		log.Fatal("no api key found")
+	}
 	// open input keyboard
-	input, err := os.Open("/dev/input/event5")
+	input, err := os.Open(inputPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,15 +42,11 @@ func main() {
 	defer output.Close()
 	defer uinput.Destroy(output)
 	// setup openai
-	client := openai.Client{
-		APIKey: os.Getenv("OPENAI_API_KEY"),
-	}
-
+	client := openai.Client{APIKey: openaiKey}
 	ctx := context.Background()
-
 	for {
 		log.Println("waiting for key")
-		recctx, err := evdev.KeyDownContext(input, inputcodes.KEY_MAIL)
+		recctx, err := evdev.KeyDownContext(input, uint16(keyCode))
 		if err != nil {
 			log.Fatal(err)
 		}
