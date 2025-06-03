@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"errors"
 	"flag"
 	"log"
 	"os"
@@ -48,22 +47,21 @@ func main() {
 	client := openai.Client{APIKey: openaiKey}
 	ctx := context.Background()
 	for {
-		log.Println("waiting for key")
-		recctx, err := evdev.KeyDownContext(input, uint16(keyCode))
-		if err != nil {
+		log.Println("waiting for key down")
+		if err := evdev.WaitForKey(input, uint16(keyCode), 1); err != nil {
 			log.Fatal(err)
 		}
 		log.Println("starting recording")
-		rec, err := pipewire.Record(recctx, pipewire.Options{
+		rec, err := pipewire.Record(ctx, pipewire.Options{
 			SampleRate:  16000,
 			NumChannels: 1,
 		})
-		if err != nil {
+		log.Println("waiting for key up")
+		if err := evdev.WaitForKey(input, uint16(keyCode), 0); err != nil {
 			log.Fatal(err)
 		}
-		<-recctx.Done()
-		if err := context.Cause(recctx); err != nil && !errors.Is(err, context.Canceled) {
-			log.Fatal("recctx cancelled with non-cancel error: ", err)
+		if err != nil {
+			log.Fatal(err)
 		}
 		log.Println("stopping recording")
 		if err := rec.Stop(); err != nil {

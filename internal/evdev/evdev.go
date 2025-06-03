@@ -1,7 +1,6 @@
 package evdev
 
 import (
-	"context"
 	"encoding/binary"
 	"os"
 
@@ -19,16 +18,4 @@ func WaitForKey(device *os.File, code uint16, value int32) error {
 			return nil
 		}
 	}
-}
-
-// KeyDownContext returns a context that is canceled when the specified key is released after being pressed.
-func KeyDownContext(device *os.File, code uint16) (context.Context, error) {
-	if err := WaitForKey(device, code, 1); err != nil {
-		return nil, err
-	}
-	ctx, cancel := context.WithCancelCause(context.Background())
-	go func() {
-		cancel(WaitForKey(device, code, 0))
-	}()
-	return ctx, nil
 }
