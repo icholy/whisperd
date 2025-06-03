@@ -28,12 +28,10 @@ type Recorder struct {
 // Record starts a new audio recording session with the given options and returns a Recorder.
 func Record(ctx context.Context, opt Options) (*Recorder, error) {
 	var rec Recorder
-	cmd := exec.CommandContext(ctx, "pw-cat",
-		"--record",
+	cmd := exec.CommandContext(ctx, "parec",
 		"--format", "s16",
 		"--rate", strconv.Itoa(opt.SampleRate),
 		"--channels", strconv.Itoa(opt.NumChannels),
-		"-",
 	)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = &rec.PCM
