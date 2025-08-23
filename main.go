@@ -56,11 +56,11 @@ func main() {
 			SampleRate:  16000,
 			NumChannels: 1,
 		})
-		log.Println("waiting for key up")
-		if err := evdev.WaitForKey(input, uint16(keyCode), 0); err != nil {
+		if err != nil {
 			log.Fatal(err)
 		}
-		if err != nil {
+		log.Println("waiting for key up")
+		if err := evdev.WaitForKey(input, uint16(keyCode), 0); err != nil {
 			log.Fatal(err)
 		}
 		log.Println("stopping recording")
@@ -69,7 +69,7 @@ func main() {
 		}
 		var wav bytes.Buffer
 		if err := rec.WriteWAV(&wav); err != nil {
-			log.Fatal()
+			log.Fatal(err)
 		}
 		log.Println("transcribing")
 		text, err := client.Transcribe(ctx, &wav, "audio.wav")
