@@ -17,9 +17,11 @@ import (
 func main() {
 	var inputPath, openaiKey string
 	var keyCode int
+	var dump bool
 	flag.StringVar(&inputPath, "input", "", "device path to use. Ex: /dev/input/eventX")
 	flag.IntVar(&keyCode, "key", int(inputcodes.KEY_MAIL), "Key code to use")
 	flag.StringVar(&openaiKey, "openai.key", "", "OpenAI API Key")
+	flag.BoolVar(&dump, "dump", false, "dump wav contents to files for debugging")
 	flag.Parse()
 	if openaiKey == "" {
 		openaiKey = os.Getenv("OPENAI_API_KEY")
@@ -70,6 +72,19 @@ func main() {
 		var wav bytes.Buffer
 		if err := rec.WriteWAV(&wav); err != nil {
 			log.Fatalf("failed to write WAV data: %v", err)
+		}
+		if dump {
+			f, err := os.CreateTemp("", "whisperd-*.wav")
+			if err != nil {
+				log.Fatal(err)
+			}
+			if _, err := wav.WriteTo(f); err != nil {
+				log.Fatal(err)
+			}
+			if err := f.Close(); err != nil {
+				log.Fatal(err)
+			}
+			log.Printf("dumped: %s", f.Name())
 		}
 		log.Println("transcribing")
 		text, err := client.Transcribe(ctx, &wav, "audio.wav")
