@@ -86,8 +86,8 @@ func main() {
 			}
 			log.Printf("dumped: %s", f.Name())
 		}
-		log.Println("transcribing")
-		text, err := client.Transcribe(ctx, &wav, "audio.wav")
+		log.Println("transcribing ...")
+		text, err := client.Transcribe(ctx, &wav)
 		if err != nil {
 			log.Fatalf("failed to transcribe audio: %v", err)
 		}
