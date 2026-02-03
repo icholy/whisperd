@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -40,6 +41,13 @@ func (c *Client) Transcribe(ctx context.Context, wav io.Reader, filename string)
 		return "", err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("failed to read error body: %w", err)
+		}
+		return "", fmt.Errorf("openai: %s: %s", resp.Status, string(body))
+	}
 	var out struct {
 		Text string `json:"text"`
 	}
