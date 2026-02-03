@@ -76,13 +76,13 @@ func main() {
 		if dump {
 			f, err := os.CreateTemp("", "whisperd-*.wav")
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalf("failed to dump wav: %v", err)
 			}
 			if _, err := wav.WriteTo(f); err != nil {
-				log.Fatal(err)
+				log.Fatalf("failed to dump wav: %v", err)
 			}
 			if err := f.Close(); err != nil {
-				log.Fatal(err)
+				log.Fatalf("failed to dump wav: %v", err)
 			}
 			log.Printf("dumped: %s", f.Name())
 		}
