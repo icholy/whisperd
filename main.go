@@ -27,7 +27,7 @@ func main() {
 	if openaiKey == "" {
 		openaiKey = os.Getenv("OPENAI_API_KEY")
 	}
-	if openaiKey == "" {
+	if openaiKey == "" && openaiBaseURL == "" {
 		log.Fatal("no api key found")
 	}
 	if inputPath == "" {
