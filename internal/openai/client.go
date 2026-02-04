@@ -2,17 +2,20 @@ package openai
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 )
 
 // Client is an OpenAI API client for audio transcription.
 type Client struct {
-	APIKey string
+	APIKey  string
+	BaseURL string
 }
 
 // Transcribe sends a WAV audio file to the OpenAI Whisper API and returns the transcribed text.
@@ -30,7 +33,12 @@ func (c *Client) Transcribe(ctx context.Context, wav io.Reader) (string, error) 
 	if err := w.Close(); err != nil {
 		return "", err
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.openai.com/v1/audio/transcriptions", &buf)
+	baseURL := cmp.Or(c.BaseURL, "https://api.openai.com/v1")
+	transcriptionsURL, err := url.JoinPath(baseURL, "/audio/transcriptions")
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequestWithContext(ctx, "POST", transcriptionsURL, &buf)
 	if err != nil {
 		return "", err
 	}

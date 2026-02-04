@@ -15,12 +15,13 @@ import (
 )
 
 func main() {
-	var inputPath, openaiKey string
+	var inputPath, openaiKey, openaiBaseURL string
 	var keyCode int
 	var dump bool
 	flag.StringVar(&inputPath, "input", "", "device path to use. Ex: /dev/input/eventX")
 	flag.IntVar(&keyCode, "key", int(inputcodes.KEY_MAIL), "Key code to use")
 	flag.StringVar(&openaiKey, "openai.key", "", "OpenAI API Key")
+	flag.StringVar(&openaiBaseURL, "openai.baseurl", "", "OpenAI base url")
 	flag.BoolVar(&dump, "dump", false, "dump wav contents to files for debugging")
 	flag.Parse()
 	if openaiKey == "" {
@@ -46,7 +47,7 @@ func main() {
 	defer output.Close()
 	defer uinput.Destroy(output)
 	// setup openai
-	client := openai.Client{APIKey: openaiKey}
+	client := openai.Client{APIKey: openaiKey, BaseURL: openaiBaseURL}
 	ctx := context.Background()
 	for {
 		log.Println("waiting for key down")
