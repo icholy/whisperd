@@ -21,6 +21,7 @@ A Linux daemon for voice-to-text typing using OpenAI Whisper.
 - `-input` - Device path to use (required). Example: `/dev/input/event3`
 - `-key` - Key code to use as hotkey (default: 155, which is KEY_MAIL)
 - `-openai.key` - OpenAI API Key (can also be set via `OPENAI_API_KEY` environment variable)
+- `-openai.baseurl` - OpenAI Base URL (can be used with locally hosted https://speaches.ai)
 
 ### Key Codes
 
