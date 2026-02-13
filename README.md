@@ -71,13 +71,9 @@ After=network.target
 Wants=network.target
 
 [Service]
-Type=simple
 ExecStart=%h/go/bin/whisperd -input /dev/input/event3 -openai.key "your-key-here"
 Restart=always
 RestartSec=5
-StandardOutput=journal
-StandardError=journal
-SyslogIdentifier=whisperd
 
 [Install]
 WantedBy=default.target
