@@ -27,35 +27,74 @@ A Linux daemon for voice-to-text typing using OpenAI Whisper.
 
 For available key codes to use with the `-key` flag, see [internal/inputcodes/codes.go](internal/inputcodes/codes.go).
 
+## Permissions
+
+Add your user to the `input` group:
+
+```sh
+sudo usermod -aG input $USER
+```
+
+Log out and back in for the group change to take effect.
+
 ## Usage
 
-1. Set your OpenAI API key:
-   ```sh
-   export OPENAI_API_KEY="your-api-key-here"
-   ```
-
-2. Find your input device:
+1. Find your input device:
    ```sh
    ls /dev/input/event*
    # or use evtest to identify the correct device
    sudo evtest
    ```
 
-3. Build and run the daemon:
+2. Build and install:
    ```sh
-   go build -o whisperd .
-   sudo ./whisperd -input /dev/input/event3
+   go install .
+   ```
+
+3. Run directly:
+   ```sh
+   whisperd -input /dev/input/event3 -openai.key "your-key-here"
    ```
 
 4. Hold the configured hotkey to dictate text.
 
-## Permissions
+## Systemd User Service
 
-- Add your user to the `input` group:
-  ```sh
-  sudo usermod -aG input $USER
-  ```
-- Or set udev rules to allow access to `/dev/uinput` and input devices without sudo. 
+To run whisperd as a user service:
+
+1. Create the service file at `~/.config/systemd/user/whisperd.service`:
+
+```ini
+[Unit]
+Description=Whisper Daemon - Voice To Text
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=%h/go/bin/whisperd -input /dev/input/event3 -openai.key "your-key-here"
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=whisperd
+
+[Install]
+WantedBy=default.target
+```
+
+2. Enable and start:
+
+```sh
+systemctl --user daemon-reload
+systemctl --user enable --now whisperd
+```
+
+3. View logs:
+
+```sh
+journalctl --user -u whisperd -f
+```
 
 ## Local Model
 
