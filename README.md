@@ -92,6 +92,14 @@ systemctl --user enable --now whisperd
 journalctl --user -u whisperd -f
 ```
 
+## System Tray
+
+whisperd shows a system tray icon (gray=idle, red=recording, yellow=transcribing). For X11 environments that only support XEmbed (e.g. i3bar), use the legacy build tag:
+
+```sh
+go build -tags legacy_systray
+```
+
 ## Local Model
 
 Run an OpenAI compatible API in a docker container: https://speaches.ai/installation

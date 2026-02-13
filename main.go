@@ -11,6 +11,7 @@ import (
 	"github.com/icholy/whisperd/internal/inputcodes"
 	"github.com/icholy/whisperd/internal/openai"
 	"github.com/icholy/whisperd/internal/pipewire"
+	"github.com/icholy/whisperd/internal/tray"
 	"github.com/icholy/whisperd/internal/uinput"
 )
 
@@ -49,52 +50,59 @@ func main() {
 	// setup openai
 	client := openai.Client{APIKey: openaiKey, BaseURL: openaiBaseURL}
 	ctx := context.Background()
-	for {
-		log.Println("waiting for key down")
-		if err := evdev.WaitForKey(input, uint16(keyCode), 1); err != nil {
-			log.Fatalf("failed to wait for key down: %v", err)
-		}
-		log.Println("starting recording")
-		rec, err := pipewire.Record(ctx, pipewire.Options{
-			SampleRate:  16000,
-			NumChannels: 1,
-		})
-		if err != nil {
-			log.Fatalf("failed to start recording: %v", err)
-		}
-		log.Println("waiting for key up")
-		if err := evdev.WaitForKey(input, uint16(keyCode), 0); err != nil {
-			log.Fatalf("failed to wait for key up: %v", err)
-		}
-		log.Println("stopping recording")
-		if err := rec.Stop(); err != nil {
-			log.Fatalf("failed to stop recording: %v", err)
-		}
-		var wav bytes.Buffer
-		if err := rec.WriteWAV(&wav); err != nil {
-			log.Fatalf("failed to write WAV data: %v", err)
-		}
-		if dump {
-			f, err := os.CreateTemp("", "whisperd-*.wav")
-			if err != nil {
-				log.Fatalf("failed to dump wav: %v", err)
+	tray.Run(func() {
+		go func() {
+			for {
+				tray.SetStatus(tray.Idle)
+				log.Println("waiting for key down")
+				if err := evdev.WaitForKey(input, uint16(keyCode), 1); err != nil {
+					log.Fatalf("failed to wait for key down: %v", err)
+				}
+				tray.SetStatus(tray.Recording)
+				log.Println("starting recording")
+				rec, err := pipewire.Record(ctx, pipewire.Options{
+					SampleRate:  16000,
+					NumChannels: 1,
+				})
+				if err != nil {
+					log.Fatalf("failed to start recording: %v", err)
+				}
+				log.Println("waiting for key up")
+				if err := evdev.WaitForKey(input, uint16(keyCode), 0); err != nil {
+					log.Fatalf("failed to wait for key up: %v", err)
+				}
+				log.Println("stopping recording")
+				if err := rec.Stop(); err != nil {
+					log.Fatalf("failed to stop recording: %v", err)
+				}
+				var wav bytes.Buffer
+				if err := rec.WriteWAV(&wav); err != nil {
+					log.Fatalf("failed to write WAV data: %v", err)
+				}
+				if dump {
+					f, err := os.CreateTemp("", "whisperd-*.wav")
+					if err != nil {
+						log.Fatalf("failed to dump wav: %v", err)
+					}
+					if _, err := wav.WriteTo(f); err != nil {
+						log.Fatalf("failed to dump wav: %v", err)
+					}
+					if err := f.Close(); err != nil {
+						log.Fatalf("failed to dump wav: %v", err)
+					}
+					log.Printf("dumped: %s", f.Name())
+				}
+				tray.SetStatus(tray.Transcribing)
+				log.Println("transcribing ...")
+				text, err := client.Transcribe(ctx, &wav)
+				if err != nil {
+					log.Fatalf("failed to transcribe audio: %v", err)
+				}
+				log.Printf("emitting: %s", text)
+				if err := uinput.EmitText(output, text); err != nil {
+					log.Fatalf("failed to emit text: %v", err)
+				}
 			}
-			if _, err := wav.WriteTo(f); err != nil {
-				log.Fatalf("failed to dump wav: %v", err)
-			}
-			if err := f.Close(); err != nil {
-				log.Fatalf("failed to dump wav: %v", err)
-			}
-			log.Printf("dumped: %s", f.Name())
-		}
-		log.Println("transcribing ...")
-		text, err := client.Transcribe(ctx, &wav)
-		if err != nil {
-			log.Fatalf("failed to transcribe audio: %v", err)
-		}
-		log.Printf("emitting: %s", text)
-		if err := uinput.EmitText(output, text); err != nil {
-			log.Fatalf("failed to emit text: %v", err)
-		}
-	}
+		}()
+	}, nil)
 }
