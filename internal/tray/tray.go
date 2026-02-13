@@ -45,6 +45,11 @@ func circleIcon(c color.Color) []byte {
 	return buf.Bytes()
 }
 
+// Enabled controls whether Run starts the systray.
+// When false, Run calls ready immediately and blocks forever,
+// and SetStatus is a no-op.
+var Enabled = true
+
 var tooltips = map[Status]string{
 	Idle:         "whisperd: idle",
 	Recording:    "whisperd: recording",

@@ -23,6 +23,7 @@ func main() {
 	flag.StringVar(&openaiKey, "openai.key", "", "OpenAI API Key")
 	flag.StringVar(&openaiBaseURL, "openai.baseurl", "", "OpenAI base url")
 	flag.BoolVar(&dump, "dump", false, "dump wav contents to files for debugging")
+	flag.BoolVar(&tray.Enabled, "tray", true, "show system tray icon")
 	flag.Parse()
 	if openaiKey == "" {
 		openaiKey = os.Getenv("OPENAI_API_KEY")
@@ -61,5 +62,5 @@ func main() {
 				log.Fatal(err)
 			}
 		}()
-	}, nil)
+	})
 }
