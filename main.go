@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"log/slog"
 	"os"
 
 	"github.com/icholy/whisperd/internal/daemon"
@@ -46,6 +47,7 @@ func main() {
 	defer output.Close()
 	defer uinput.Destroy(output)
 	d := &daemon.Daemon{
+		Log:     slog.Default(),
 		Input:   input,
 		Output:  output,
 		Client:  openai.Client{APIKey: openaiKey, BaseURL: openaiBaseURL},

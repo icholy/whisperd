@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/icholy/whisperd/internal/evdev"
@@ -15,6 +15,7 @@ import (
 )
 
 type Daemon struct {
+	Log     *slog.Logger
 	Input   *os.File
 	Output  *os.File
 	Client  openai.Client
@@ -25,12 +26,12 @@ type Daemon struct {
 func (d *Daemon) Run(ctx context.Context) error {
 	for {
 		tray.SetStatus(tray.Idle)
-		log.Println("waiting for key down")
+		d.Log.Info("waiting for key down")
 		if err := evdev.WaitForKey(d.Input, d.KeyCode, 1); err != nil {
 			return fmt.Errorf("wait for key down: %w", err)
 		}
 		tray.SetStatus(tray.Recording)
-		log.Println("starting recording")
+		d.Log.Info("starting recording")
 		rec, err := pipewire.Record(ctx, pipewire.Options{
 			SampleRate:  16000,
 			NumChannels: 1,
@@ -38,11 +39,11 @@ func (d *Daemon) Run(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("start recording: %w", err)
 		}
-		log.Println("waiting for key up")
+		d.Log.Info("waiting for key up")
 		if err := evdev.WaitForKey(d.Input, d.KeyCode, 0); err != nil {
 			return fmt.Errorf("wait for key up: %w", err)
 		}
-		log.Println("stopping recording")
+		d.Log.Info("stopping recording")
 		if err := rec.Stop(); err != nil {
 			return fmt.Errorf("stop recording: %w", err)
 		}
@@ -62,15 +63,15 @@ func (d *Daemon) Run(ctx context.Context) error {
 			if err := f.Close(); err != nil {
 				return fmt.Errorf("dump wav: %w", err)
 			}
-			log.Printf("dumped: %s", f.Name())
+			d.Log.Info("dumped", "path", f.Name())
 		}
 		tray.SetStatus(tray.Transcribing)
-		log.Println("transcribing ...")
+		d.Log.Info("transcribing")
 		text, err := d.Client.Transcribe(ctx, &wav)
 		if err != nil {
 			return fmt.Errorf("transcribe: %w", err)
 		}
-		log.Printf("emitting: %s", text)
+		d.Log.Info("emitting", "text", text)
 		if err := uinput.EmitText(d.Output, text); err != nil {
 			return fmt.Errorf("emit text: %w", err)
 		}
