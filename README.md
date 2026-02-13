@@ -41,21 +41,24 @@ Log out and back in for the group change to take effect.
 ## Usage
 
 1. Find your input device:
-   ```sh
-   ls /dev/input/event*
-   # or use evtest to identify the correct device
-   sudo evtest
-   ```
+
+```sh
+ls /dev/input/event*
+# or use evtest to identify the correct device
+sudo evtest
+```
 
 2. Build and install:
-   ```sh
-   go install .
-   ```
+
+```sh
+go install .
+```
 
 3. Run directly:
-   ```sh
-   whisperd -input /dev/input/event3 -openai.key "your-key-here"
-   ```
+
+```sh
+whisperd -input /dev/input/event3 -openai.key "your-key-here"
+```
 
 4. Hold the configured hotkey to dictate text.
 
